@@ -41,22 +41,22 @@ class Market(object):
         fields = SplitOnDelimiter('~', recordString)
         market = cls()
 
-        market.Id = int(fields[0])
-        market.Name = fields[1]
-        market.Type = fields[2]
-        market.Status = fields[3]
-        market.StartDate = DateTimeFromPosix(int(fields[4]))
-        market.Path = fields[5]
-        market.EventHierarchy = fields[6]
-        market.BetDelay = fields[7]
-        market.ExchangeId = int(fields[8])
-        market.CountryCode = fields[9]
-        market.LastRefresh = DateTimeFromPosix(int(fields[10]))
-        market.NumberOfRunners = int(fields[11])
-        market.NumberOfWinners = int(fields[12])
-        market.TotalAmountMatched = float(fields[13])
-        market.BSPMarket = fields[14] == "Y"
-        market.TurningInPlay = fields[15] == "Y"
+        market.marketId = int(fields[0])
+        market.name = fields[1]
+        market.marketType = fields[2]
+        market.marketStatus = fields[3]
+        market.marketTime = DateTimeFromPosix(int(fields[4]))
+        market.menuPath = fields[5]
+        market.eventHierarchy = fields[6]
+        market.betDelay = fields[7]
+        market.exchangeId = int(fields[8])
+        market.countryISO3 = fields[9]
+        market.lastRefresh = DateTimeFromPosix(int(fields[10]))
+        market.numberOfRunners = int(fields[11])
+        market.numberOfWinners = int(fields[12])
+        market.totalAmountMatched = float(fields[13])
+        market.bspMarket = fields[14] == "Y"
+        market.turningInPlay = fields[15] == "Y"
         return market
 
     def __str__(self):
