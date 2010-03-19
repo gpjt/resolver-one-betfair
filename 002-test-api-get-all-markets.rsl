@@ -1,8 +1,8 @@
 <!--
 This spreadsheet is copyright 2010, all rights reserved.
 -->
-<document currentResultWorksheet="Sheet1" verticalSplitterRatio="0.75" horizontalSplitterRatio="0.464922711058" splitterOrientation="Horizontal" suspendRecalculations="False" license="Closed source/proprietary" copyrightOwner="" resolverVersion="1.8" resolverBuild="5055" documentVersion="12">
-    <foldState license="True" imports="True" worksheetCreation="True" preConstantsUserCode="False" constants="True" preFormulaeUserCode="False" generated="False" postFormulaeUserCode="False"/>
+<document currentResultWorksheet="Sheet1" verticalSplitterRatio="0.75" horizontalSplitterRatio="0.798214285714" splitterOrientation="Horizontal" suspendRecalculations="False" license="Closed source/proprietary" copyrightOwner="" resolverVersion="1.9 pre-pre-alpha 1" resolverBuild="5084" documentVersion="13">
+    <foldState license="True" imports="True" worksheetCreation="True" preConstantsUserCode="False" constants="False" preFormulaeUserCode="False" generated="False" postFormulaeUserCode="False"/>
     <traitDefaults>
         <traitDefault name='ColWidth' value='82' />
         <traitDefault name='FontSize' value='10.0' />
@@ -25,7 +25,7 @@ for market in gateway.getAllMarkets():
     <names />
     <viewStates>
         <viewState worksheet="Sheet1">
-            <currentCell col="3" row="4" />
+            <currentCell col="1" row="10" />
             <scrollPos col="1" row="1" />
             <virtualGridSize width="15" height="10181" />
         </viewState>

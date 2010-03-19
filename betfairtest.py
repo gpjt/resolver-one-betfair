@@ -12,12 +12,12 @@ class MockBFGlobalService(object):
         MockBFGlobalService.test.assertEqual(request.username, MockBFGlobalService.expectedUsername)
         MockBFGlobalService.test.assertEqual(request.password, MockBFGlobalService.expectedPassword)
         MockBFGlobalService.test.assertEqual(request.productId, 82)
-        if MockBFGlobalService.success:
-            errorCode = BetfairSOAPAPI.LoginErrorEnum.OK
-        else:
-            errorCode = BetfairSOAPAPI.LoginErrorEnum.INVALID_USERNAME_OR_PASSWORD
+
         header = BetfairSOAPAPI.APIResponseHeader1(sessionToken=MockBFGlobalService.sessionToken)
-        return BetfairSOAPAPI.LoginResp(errorCode=errorCode, header=header)
+        header.errorCode = MockBFGlobalService.loginHeaderErrorCode
+        response = BetfairSOAPAPI.LoginResp(header=header)
+        response.errorCode = MockBFGlobalService.loginErrorCode
+        return response
 
 
 class MockBFExchangeService(object):
@@ -28,7 +28,14 @@ class MockBFExchangeService(object):
             request.header.sessionToken
         )
         response = BetfairSOAPAPI.GetAllMarketsResp()
-        response.marketData = MockBFExchangeService.marketData
+        response.header = BetfairSOAPAPI.APIResponseHeader()
+
+        if MockBFExchangeService.getAllMarketsResponseError is not None:
+            response.errorCode = MockBFExchangeService.getAllMarketsResponseError
+        if MockBFExchangeService.getAllMarketsResponseHeaderError is not None:
+            response.header.errorCode = MockBFExchangeService.getAllMarketsResponseHeaderError
+
+        response.marketData = MockBFExchangeService.getAllMarketsData
         return response
 
 
@@ -42,6 +49,7 @@ class MockBetfairSOAPAPI(object):
     LoginErrorEnum = BetfairSOAPAPI.LoginErrorEnum
 
     GetAllMarketsReq = BetfairSOAPAPI.GetAllMarketsReq
+    GetAllMarketsErrorEnum = BetfairSOAPAPI.GetAllMarketsErrorEnum
 
 mockBetfairSOAPAPI = MockBetfairSOAPAPI()
 
@@ -135,29 +143,34 @@ class BetfairGatewayTest(unittest.TestCase):
 
 
     @MockOut(BetfairSOAPAPI=mockBetfairSOAPAPI)
-    def testLoginShouldReturnTrueAndSetSessionTokenWhenSuccessful(self):
+    def testLoginShouldSetSessionTokenWhenSuccessful(self):
         gateway = betfair.Gateway()
         MockBFGlobalService.test = self
-        MockBFGlobalService.success = True
+        MockBFGlobalService.loginErrorCode = BetfairSOAPAPI.LoginErrorEnum.OK
+        MockBFGlobalService.loginHeaderErrorCode = BetfairSOAPAPI.APIErrorEnum1.OK
         MockBFGlobalService.expectedUsername = "harold"
         MockBFGlobalService.expectedPassword = "s3kr1t"
         MockBFGlobalService.sessionToken = "12345"
-        result = gateway.login(MockBFGlobalService.expectedUsername, MockBFGlobalService.expectedPassword)
-        self.assertTrue(result)
+        gateway.login(MockBFGlobalService.expectedUsername, MockBFGlobalService.expectedPassword)
         self.assertEquals(gateway._sessionToken, MockBFGlobalService.sessionToken)
 
 
     @MockOut(BetfairSOAPAPI=mockBetfairSOAPAPI)
-    def testLoginShouldReturnFalseAndClearSessionTokenWhenUnsuccessful(self):
+    def testLoginShouldThrowExceptionAndClearSessionTokenWhenUnsuccessful(self):
         gateway = betfair.Gateway()
         MockBFGlobalService.test = self
-        MockBFGlobalService.success = False
+        MockBFGlobalService.loginErrorCode = BetfairSOAPAPI.LoginErrorEnum.API_ERROR
+        MockBFGlobalService.loginHeaderErrorCode = BetfairSOAPAPI.APIErrorEnum1.PRODUCT_REQUIRES_FUNDED_ACCOUNT
         MockBFGlobalService.expectedUsername = "harold"
         MockBFGlobalService.expectedPassword = "s3kr1t"
         MockBFGlobalService.sessionToken = "12345"
-        result = gateway.login(MockBFGlobalService.expectedUsername, MockBFGlobalService.expectedPassword)
-        self.assertFalse(result)
-        self.assertEquals(gateway._sessionToken, None)
+        try:
+            gateway.login(MockBFGlobalService.expectedUsername, MockBFGlobalService.expectedPassword)
+            self.fail("No exception")
+        except betfair.APIException, e:
+            self.assertEquals(gateway._sessionToken, None)
+            self.assertEquals(e.errorCode, BetfairSOAPAPI.LoginErrorEnum.API_ERROR)
+            self.assertEquals(e.headerErrorCode, BetfairSOAPAPI.APIErrorEnum1.PRODUCT_REQUIRES_FUNDED_ACCOUNT)
 
 
     @MockOut(Market=MockMarket, BetfairSOAPAPI=mockBetfairSOAPAPI)
@@ -167,13 +180,35 @@ class BetfairGatewayTest(unittest.TestCase):
         MockBFExchangeService.test = self
         MockBFExchangeService.expectedSessionToken = gateway._sessionToken
         MockBFExchangeService.getAllMarketsCalled = False
-        MockBFExchangeService.marketData = ":a:b:c:d"
+        MockBFExchangeService.getAllMarketsResponseError = None
+        MockBFExchangeService.getAllMarketsResponseHeaderError = None
+        MockBFExchangeService.getAllMarketsData = ":a:b:c:d"
         MockMarket.test = self
         MockMarket.fromRecordStringExpected = ["a", "b", "c", "d"]
         MockMarket.fromRecordStringResults = [1, 2, 3, 4]
         markets = gateway.getAllMarkets()
         self.assertTrue(MockBFExchangeService.getAllMarketsCalled)
         self.assertEquals(markets, [1, 2, 3, 4])
+
+
+    @MockOut(Market=MockMarket, BetfairSOAPAPI=mockBetfairSOAPAPI)
+    def testGetAllMarketsShouldThrowExceptionIfErrorCodeIsReturned(self):
+        gateway = betfair.Gateway()
+        gateway._sessionToken = "12345"
+        MockBFExchangeService.test = self
+        MockBFExchangeService.expectedSessionToken = gateway._sessionToken
+        MockBFExchangeService.getAllMarketsCalled = False
+        MockBFExchangeService.getAllMarketsResponseError = BetfairSOAPAPI.GetAllMarketsErrorEnum.API_ERROR
+        MockBFExchangeService.getAllMarketsResponseHeaderError = BetfairSOAPAPI.APIErrorEnum.NO_SESSION
+        MockBFExchangeService.getAllMarketsData = None
+        try:
+            markets = gateway.getAllMarkets()
+            self.fail("No exception")
+        except betfair.APIException, e:
+            self.assertEquals(e.errorCode, BetfairSOAPAPI.GetAllMarketsErrorEnum.API_ERROR)
+            self.assertEquals(e.headerErrorCode, BetfairSOAPAPI.APIErrorEnum.NO_SESSION)
+
+
 
 
 if __name__ == '__main__':

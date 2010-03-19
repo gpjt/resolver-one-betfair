@@ -6,6 +6,12 @@ import BetfairSOAPAPI
 
 
 
+class APIException(Exception):
+    def __init__(self, errorCode, headerErrorCode):
+        self.errorCode = errorCode
+        self.headerErrorCode = headerErrorCode
+
+
 def DateTimeFromPosix(milliseconds):
     return DateTime(1970, 1, 1).AddMilliseconds(milliseconds)
 
@@ -67,17 +73,18 @@ class Gateway(object):
     def login(self, username, password):
         loginReq = BetfairSOAPAPI.LoginReq(username=username, password=password, productId=82)
         response = self.globalService.login(loginReq)
-        if response.errorCode == BetfairSOAPAPI.LoginErrorEnum.OK:
-            self._sessionToken = response.header.sessionToken
-            return True
-        self._sessionToken = None
-        return False
+        if response.errorCode != BetfairSOAPAPI.LoginErrorEnum.OK:
+            self._sessionToken = None
+            raise APIException(response.errorCode, response.header.errorCode)
+        self._sessionToken = response.header.sessionToken
 
 
     def getAllMarkets(self):
         request = BetfairSOAPAPI.GetAllMarketsReq()
         request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
         response = self.exchangeService.getAllMarkets(request)
+        if response.errorCode != BetfairSOAPAPI.GetAllMarketsErrorEnum.OK:
+            raise APIException(response.errorCode, response.header.errorCode)
         result = []
         for data in SplitOnDelimiter(':', response.marketData):
             if data != "":
