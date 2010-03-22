@@ -35,29 +35,29 @@ def SplitOnDelimiter(delimiter, string):
     return words
 
 
-class Market(object):
+class GetAllMarketsResult(object):
     @classmethod
     def fromRecordString(cls, recordString):
         fields = SplitOnDelimiter('~', recordString)
-        market = cls()
+        result = cls()
 
-        market.marketId = int(fields[0])
-        market.name = fields[1]
-        market.marketType = fields[2]
-        market.marketStatus = fields[3]
-        market.marketTime = DateTimeFromPosix(int(fields[4]))
-        market.menuPath = fields[5]
-        market.eventHierarchy = fields[6]
-        market.betDelay = fields[7]
-        market.exchangeId = int(fields[8])
-        market.countryISO3 = fields[9]
-        market.lastRefresh = DateTimeFromPosix(int(fields[10]))
-        market.numberOfRunners = int(fields[11])
-        market.numberOfWinners = int(fields[12])
-        market.totalAmountMatched = float(fields[13])
-        market.bspMarket = fields[14] == "Y"
-        market.turningInPlay = fields[15] == "Y"
-        return market
+        result.marketId = int(fields[0])
+        result.name = fields[1]
+        result.marketType = fields[2]
+        result.marketStatus = fields[3]
+        result.marketTime = DateTimeFromPosix(int(fields[4]))
+        result.menuPath = fields[5]
+        result.eventHierarchy = fields[6]
+        result.betDelay = fields[7]
+        result.exchangeId = int(fields[8])
+        result.countryISO3 = fields[9]
+        result.lastRefresh = DateTimeFromPosix(int(fields[10]))
+        result.numberOfRunners = int(fields[11])
+        result.numberOfWinners = int(fields[12])
+        result.totalAmountMatched = float(fields[13])
+        result.bspMarket = fields[14] == "Y"
+        result.turningInPlay = fields[15] == "Y"
+        return result
 
     def __str__(self):
         return "Market: %s" % (self.Name, )
@@ -88,7 +88,7 @@ class Gateway(object):
         result = []
         for data in SplitOnDelimiter(':', response.marketData):
             if data != "":
-                result.append(Market.fromRecordString(data))
+                result.append(GetAllMarketsResult.fromRecordString(data))
         return result
 
 
