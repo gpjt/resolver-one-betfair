@@ -90,3 +90,12 @@ class Gateway(object):
             if data != "":
                 result.append(Market.fromRecordString(data))
         return result
+
+
+    def getAccountFunds(self):
+        request = BetfairSOAPAPI.GetAccountFundsReq()
+        request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
+        response = self.exchangeService.getAccountFunds(request)
+        if response.errorCode != BetfairSOAPAPI.GetAccountFundsErrorEnum.OK:
+            raise APIException(response.errorCode, response.header.errorCode)
+        return response.availBalance
