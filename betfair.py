@@ -92,6 +92,16 @@ class Gateway(object):
         return result
 
 
+    def getMarket(self, id):
+        request = BetfairSOAPAPI.GetMarketReq()
+        request.marketId = id
+        request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
+        response = self.exchangeService.getMarket(request)
+        if response.errorCode != BetfairSOAPAPI.GetMarketErrorEnum.OK:
+            raise APIException(response.errorCode, response.header.errorCode)
+        return response.market
+
+
     def getAccountFunds(self):
         request = BetfairSOAPAPI.GetAccountFundsReq()
         request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
