@@ -227,6 +227,7 @@ class BetfairGatewayTest(unittest.TestCase):
             markets = gateway.getAllMarkets()
             self.fail("No exception")
         except betfair.APIException, e:
+            self.assertTrue(MockBFExchangeService.getAllMarketsCalled)
             self.assertEquals(e.errorCode, BetfairSOAPAPI.GetAllMarketsErrorEnum.API_ERROR)
             self.assertEquals(e.headerErrorCode, BetfairSOAPAPI.APIErrorEnum.NO_SESSION)
 
@@ -260,10 +261,9 @@ class BetfairGatewayTest(unittest.TestCase):
             markets = gateway.getAccountFunds()
             self.fail("No exception")
         except betfair.APIException, e:
+            self.assertTrue(MockBFExchangeService.getAccountFundsCalled)
             self.assertEquals(e.errorCode, BetfairSOAPAPI.GetAccountFundsErrorEnum.API_ERROR)
             self.assertEquals(e.headerErrorCode, BetfairSOAPAPI.APIErrorEnum.NO_SESSION)
-
-
 
 
 
