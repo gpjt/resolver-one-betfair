@@ -1,0 +1,4 @@
+Issues for the current version of the Resolver One Betfair API
+
+- Many functions not supported yet
+- getAllMarkets does not take parameters
