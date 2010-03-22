@@ -232,7 +232,7 @@ class BetfairGatewayTest(unittest.TestCase):
 
 
     @MockOut(Market=MockMarket, BetfairSOAPAPI=mockBetfairSOAPAPI)
-    def testGetAccountFundsShouldPassSessionTokenAndReturnFunds(self):
+    def testGetAccountFundsShouldPassSessionTokenAndReturnFundsObject(self):
         gateway = betfair.Gateway()
         gateway._sessionToken = "12345"
         MockBFExchangeService.test = self
@@ -243,7 +243,7 @@ class BetfairGatewayTest(unittest.TestCase):
         MockBFExchangeService.getAccountFundsAvailBalance = 1234.5678
         funds = gateway.getAccountFunds()
         self.assertTrue(MockBFExchangeService.getAccountFundsCalled)
-        self.assertEquals(funds, MockBFExchangeService.getAccountFundsAvailBalance)
+        self.assertEquals(funds.availBalance, MockBFExchangeService.getAccountFundsAvailBalance)
 
 
     @MockOut(Market=MockMarket, BetfairSOAPAPI=mockBetfairSOAPAPI)

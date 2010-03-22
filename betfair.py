@@ -98,4 +98,4 @@ class Gateway(object):
         response = self.exchangeService.getAccountFunds(request)
         if response.errorCode != BetfairSOAPAPI.GetAccountFundsErrorEnum.OK:
             raise APIException(response.errorCode, response.header.errorCode)
-        return response.availBalance
+        return response
