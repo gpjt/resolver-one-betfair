@@ -12,6 +12,10 @@ class APIException(Exception):
         self.headerErrorCode = headerErrorCode
 
 
+    def __str__(self):
+        return "APIException(%s, %s)" % (self.errorCode, self.headerErrorCode)
+
+
 def DateTimeFromPosix(milliseconds):
     return DateTime(1970, 1, 1).AddMilliseconds(milliseconds)
 
@@ -79,12 +83,16 @@ class Gateway(object):
         self._sessionToken = response.header.sessionToken
 
 
-    def getAllMarkets(self):
-        request = BetfairSOAPAPI.GetAllMarketsReq()
+    def _makeLoggedInRequest(self, request, function, okCode):
         request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
-        response = self.exchangeService.getAllMarkets(request)
-        if response.errorCode != BetfairSOAPAPI.GetAllMarketsErrorEnum.OK:
+        response = function(request)
+        if response.errorCode != okCode:
             raise APIException(response.errorCode, response.header.errorCode)
+        return response
+
+
+    def getAllMarkets(self):
+        response = self._makeLoggedInRequest(BetfairSOAPAPI.GetAllMarketsReq(), self.exchangeService.getAllMarkets, BetfairSOAPAPI.GetAllMarketsErrorEnum.OK)
         result = []
         for data in SplitOnDelimiter(':', response.marketData):
             if data != "":
@@ -93,19 +101,10 @@ class Gateway(object):
 
 
     def getMarket(self, id):
-        request = BetfairSOAPAPI.GetMarketReq()
-        request.marketId = id
-        request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
-        response = self.exchangeService.getMarket(request)
-        if response.errorCode != BetfairSOAPAPI.GetMarketErrorEnum.OK:
-            raise APIException(response.errorCode, response.header.errorCode)
+        response = self._makeLoggedInRequest(BetfairSOAPAPI.GetMarketReq(marketId=id), self.exchangeService.getMarket, BetfairSOAPAPI.GetMarketErrorEnum.OK)
         return response.market
 
 
     def getAccountFunds(self):
-        request = BetfairSOAPAPI.GetAccountFundsReq()
-        request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
-        response = self.exchangeService.getAccountFunds(request)
-        if response.errorCode != BetfairSOAPAPI.GetAccountFundsErrorEnum.OK:
-            raise APIException(response.errorCode, response.header.errorCode)
+        response = self._makeLoggedInRequest(BetfairSOAPAPI.GetAccountFundsReq(), self.exchangeService.getAccountFunds, BetfairSOAPAPI.GetAccountFundsErrorEnum.OK)
         return response
