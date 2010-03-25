@@ -33,27 +33,7 @@ class MockBFGlobalService(object):
 
 
 class MockBFExchangeService(object):
-    def getMarket(self, request):
-        MockBFExchangeService.getMarketCalled = True
-        MockBFExchangeService.test.assertEqual(
-            MockBFExchangeService.expectedSessionToken,
-            request.header.sessionToken
-        )
-        MockBFExchangeService.test.assertEqual(
-            MockBFExchangeService.expectedGetMarketMarketID,
-            request.marketId
-        )
-
-        response = BetfairSOAPAPI.GetMarketResp()
-        response.header = BetfairSOAPAPI.APIResponseHeader()
-        response.market = MockBFExchangeService.getMarketMarket
-
-        if MockBFExchangeService.getMarketResponseError is not None:
-            response.errorCode = MockBFExchangeService.getMarketResponseError
-        if MockBFExchangeService.getMarketResponseHeaderError is not None:
-            response.header.errorCode = MockBFExchangeService.getMarketResponseHeaderError
-
-        return response
+    pass
 
 
 class MockBetfairSOAPAPI(object):
