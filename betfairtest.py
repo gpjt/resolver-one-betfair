@@ -33,24 +33,6 @@ class MockBFGlobalService(object):
 
 
 class MockBFExchangeService(object):
-    def getAllMarkets(self, request):
-        MockBFExchangeService.getAllMarketsCalled = True
-        MockBFExchangeService.test.assertEqual(
-            MockBFExchangeService.expectedSessionToken,
-            request.header.sessionToken
-        )
-        response = BetfairSOAPAPI.GetAllMarketsResp()
-        response.header = BetfairSOAPAPI.APIResponseHeader()
-
-        if MockBFExchangeService.getAllMarketsResponseError is not None:
-            response.errorCode = MockBFExchangeService.getAllMarketsResponseError
-        if MockBFExchangeService.getAllMarketsResponseHeaderError is not None:
-            response.header.errorCode = MockBFExchangeService.getAllMarketsResponseHeaderError
-
-        response.marketData = MockBFExchangeService.getAllMarketsData
-        return response
-
-
     def getMarket(self, request):
         MockBFExchangeService.getMarketCalled = True
         MockBFExchangeService.test.assertEqual(
@@ -71,25 +53,6 @@ class MockBFExchangeService(object):
         if MockBFExchangeService.getMarketResponseHeaderError is not None:
             response.header.errorCode = MockBFExchangeService.getMarketResponseHeaderError
 
-        return response
-
-
-    def getAccountFunds(self, request):
-        MockBFExchangeService.getAccountFundsCalled = True
-        MockBFExchangeService.test.assertEqual(
-            MockBFExchangeService.expectedSessionToken,
-            request.header.sessionToken
-        )
-
-        response = BetfairSOAPAPI.GetAccountFundsResp()
-        response.header = BetfairSOAPAPI.APIResponseHeader()
-
-        if MockBFExchangeService.getAccountFundsResponseError is not None:
-            response.errorCode = MockBFExchangeService.getAccountFundsResponseError
-        if MockBFExchangeService.getAccountFundsResponseHeaderError is not None:
-            response.header.errorCode = MockBFExchangeService.getAccountFundsResponseHeaderError
-
-        response.availBalance = MockBFExchangeService.getAccountFundsAvailBalance
         return response
 
 
