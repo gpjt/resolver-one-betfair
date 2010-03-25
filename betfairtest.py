@@ -268,23 +268,6 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEquals(markets, [1, 2, 3, 4])
 
 
-    def testGetAccountFundsShouldMakeLoggedInRequestAndReturnFundsObject(self):
-        gateway = betfair.Gateway()
-
-        expectedFundsObject = object()
-        gateway._makeLoggedInRequest = MockFunction(expectedFundsObject)
-
-        actualFundsObject = gateway.getAccountFunds()
-
-        self.assertTrue(gateway._makeLoggedInRequest.called)
-
-        request, function, okCode = gateway._makeLoggedInRequest.args
-        self.assertEqual(type(request), BetfairSOAPAPI.GetAccountFundsReq)
-        self.assertEqual(function, gateway.exchangeService.getAccountFunds)
-        self.assertEqual(okCode, BetfairSOAPAPI.GetAccountFundsErrorEnum.OK)
-        self.assertEquals(actualFundsObject, expectedFundsObject)
-
-
     def testGetMarketShouldShouldMakeLoggedInRequestWithMarketIDAndReturnABetfairMarketObject(self):
         gateway = betfair.Gateway()
 
@@ -307,6 +290,23 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEqual(function, gateway.exchangeService.getMarket)
         self.assertEqual(okCode, BetfairSOAPAPI.GetMarketErrorEnum.OK)
         self.assertEquals(actualMarketObject, expectedMarketObject)
+
+
+    def testGetAccountFundsShouldMakeLoggedInRequestAndReturnFundsObject(self):
+        gateway = betfair.Gateway()
+
+        expectedFundsObject = object()
+        gateway._makeLoggedInRequest = MockFunction(expectedFundsObject)
+
+        actualFundsObject = gateway.getAccountFunds()
+
+        self.assertTrue(gateway._makeLoggedInRequest.called)
+
+        request, function, okCode = gateway._makeLoggedInRequest.args
+        self.assertEqual(type(request), BetfairSOAPAPI.GetAccountFundsReq)
+        self.assertEqual(function, gateway.exchangeService.getAccountFunds)
+        self.assertEqual(okCode, BetfairSOAPAPI.GetAccountFundsErrorEnum.OK)
+        self.assertEquals(actualFundsObject, expectedFundsObject)
 
 
     def testGetMarketNameShouldGetMarketAndReturnItsName(self):
