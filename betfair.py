@@ -1,4 +1,4 @@
-from System import DateTime
+from System import Array, DateTime
 
 import clr
 clr.AddReference("betfair")
@@ -125,6 +125,15 @@ class Gateway(object):
             BetfairSOAPAPI.GetAccountFundsErrorEnum.OK
         )
         return response
+
+
+    def placeBets(self, bets):
+        response = self._makeLoggedInRequest(
+            BetfairSOAPAPI.PlaceBetsReq(bets=Array[BetfairSOAPAPI.PlaceBets](bets)),
+            self.exchangeService.placeBets,
+            BetfairSOAPAPI.PlaceBetsErrorEnum.OK
+        )
+        return response.betResults
 
 
     ############################################################################################

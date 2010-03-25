@@ -309,6 +309,33 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEquals(actualFundsObject, expectedFundsObject)
 
 
+    def testPlaceBetsShouldMakeLoggedInRequestAndReturnArrayOfResults(self):
+        gateway = betfair.Gateway()
+
+        class MockPlaceBetsResponse(object):
+            def __init__(self, betResults):
+                self.betResults = betResults
+
+        expectedBetResults = object()
+        gateway._makeLoggedInRequest = MockFunction(MockPlaceBetsResponse(expectedBetResults))
+
+        betsToPlace = [BetfairSOAPAPI.PlaceBets(), BetfairSOAPAPI.PlaceBets(), BetfairSOAPAPI.PlaceBets()]
+
+        actualBetResults = gateway.placeBets(betsToPlace)
+
+        self.assertTrue(gateway._makeLoggedInRequest.called)
+
+        request, function, okCode = gateway._makeLoggedInRequest.args
+        self.assertEqual(type(request), BetfairSOAPAPI.PlaceBetsReq)
+        for ix, (actual, expected) in enumerate(zip(request.bets, betsToPlace)):
+            self.assertEqual(actual, expected, "Item %s incorrect" % ix)
+        self.assertEqual(function, gateway.exchangeService.placeBets)
+        self.assertEqual(okCode, BetfairSOAPAPI.PlaceBetsErrorEnum.OK)
+        self.assertEquals(actualBetResults, expectedBetResults)
+
+
+
+
     def testGetMarketNameShouldGetMarketAndReturnItsName(self):
         gateway = betfair.Gateway()
 
