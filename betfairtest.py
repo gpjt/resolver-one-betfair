@@ -300,10 +300,10 @@ class BetfairGatewayTest(unittest.TestCase):
     def testGetAccountFundsShouldMakeLoggedInRequestAndReturnFundsObject(self):
         gateway = betfair.Gateway()
 
-        fundsObject = object()
-        gateway._makeLoggedInRequest = MockFunction(fundsObject)
+        expectedFundsObject = object()
+        gateway._makeLoggedInRequest = MockFunction(expectedFundsObject)
 
-        funds = gateway.getAccountFunds()
+        actualFundsObject = gateway.getAccountFunds()
 
         self.assertTrue(gateway._makeLoggedInRequest.called)
 
@@ -311,44 +311,31 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEqual(type(request), BetfairSOAPAPI.GetAccountFundsReq)
         self.assertEqual(function, gateway.exchangeService.getAccountFunds)
         self.assertEqual(okCode, BetfairSOAPAPI.GetAccountFundsErrorEnum.OK)
-        self.assertEquals(funds, fundsObject)
+        self.assertEquals(actualFundsObject, expectedFundsObject)
 
 
-    @MockOut(BetfairSOAPAPI=mockBetfairSOAPAPI)
-    def testGetMarketShouldPassSessionTokenAndMarketIDAndReturnABetfairMarketObject(self):
+    def testGetMarketShouldShouldMakeLoggedInRequestWithMarketIDAndReturnABetfairMarketObject(self):
         gateway = betfair.Gateway()
-        gateway._sessionToken = "12345"
-        MockBFExchangeService.test = self
-        MockBFExchangeService.expectedSessionToken = gateway._sessionToken
-        MockBFExchangeService.expectedGetMarketMarketID = 23
-        MockBFExchangeService.getMarketCalled = False
-        MockBFExchangeService.getMarketResponseError = None
-        MockBFExchangeService.getMarketResponseHeaderError = None
-        MockBFExchangeService.getMarketMarket = BetfairSOAPAPI.Market()
-        market = gateway.getMarket(MockBFExchangeService.expectedGetMarketMarketID)
-        self.assertTrue(MockBFExchangeService.getMarketCalled)
-        self.assertEquals(market, MockBFExchangeService.getMarketMarket)
 
+        class MockGetMarketResponse(object):
+            def __init__(self, market):
+                self.market = market
 
-    @MockOut(BetfairSOAPAPI=mockBetfairSOAPAPI)
-    def testGetMarketShouldThrowExceptionIfErrorCodeIsReturned(self):
-        gateway = betfair.Gateway()
-        gateway._sessionToken = "12345"
-        MockBFExchangeService.test = self
-        MockBFExchangeService.expectedSessionToken = gateway._sessionToken
-        MockBFExchangeService.expectedGetMarketMarketID = 23
-        MockBFExchangeService.getMarketCalled = False
-        MockBFExchangeService.getMarketResponseError = BetfairSOAPAPI.GetMarketErrorEnum.API_ERROR
-        MockBFExchangeService.getMarketResponseHeaderError = BetfairSOAPAPI.APIErrorEnum.NO_SESSION
-        MockBFExchangeService.getMarketMarket = None
-        try:
-            markets = gateway.getMarket(MockBFExchangeService.expectedGetMarketMarketID)
-            self.fail("No exception")
-        except betfair.APIException, e:
-            self.assertTrue(MockBFExchangeService.getMarketCalled)
-            self.assertEquals(e.errorCode, BetfairSOAPAPI.GetMarketErrorEnum.API_ERROR)
-            self.assertEquals(e.headerErrorCode, BetfairSOAPAPI.APIErrorEnum.NO_SESSION)
+        expectedMarketObject = object()
+        gateway._makeLoggedInRequest = MockFunction(MockGetMarketResponse(expectedMarketObject))
 
+        marketID = 5653
+
+        actualMarketObject = gateway.getMarket(marketID)
+
+        self.assertTrue(gateway._makeLoggedInRequest.called)
+
+        request, function, okCode = gateway._makeLoggedInRequest.args
+        self.assertEqual(type(request), BetfairSOAPAPI.GetMarketReq)
+        self.assertEqual(request.marketId, marketID)
+        self.assertEqual(function, gateway.exchangeService.getMarket)
+        self.assertEqual(okCode, BetfairSOAPAPI.GetMarketErrorEnum.OK)
+        self.assertEquals(actualMarketObject, expectedMarketObject)
 
 
 
