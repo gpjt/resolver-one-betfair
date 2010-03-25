@@ -224,6 +224,80 @@ class BetfairGatewayTest(unittest.TestCase):
             self.assertEquals(e.headerErrorCode, BetfairSOAPAPI.APIErrorEnum1.PRODUCT_REQUIRES_FUNDED_ACCOUNT)
 
 
+    def testMakeLoggedInRequestShouldCallFunctionWithGivenRequestAndSessionTokenAndReturnResultIfNotError(self):
+        gateway = betfair.Gateway()
+        gateway._sessionToken = "12345"
+
+        class MockRequest(object):
+            pass
+
+        class MockResponse(object):
+            pass
+
+        okErrorCode = object()
+        class MockFunction(object):
+            def __init__(self, response):
+                self.called = False
+                self.response = response
+
+            def __call__(self, request):
+                self.called = True
+                self.request = request
+                self.response.errorCode = okErrorCode
+                return self.response
+
+        request = MockRequest()
+        response = MockResponse()
+        function = MockFunction(response)
+        result = gateway._makeLoggedInRequest(request, function, okErrorCode)
+        self.assertTrue(function.called, True)
+        self.assertEquals(function.request, request)
+        self.assertEquals(function.request.header.sessionToken, gateway._sessionToken)
+        self.assertEquals(result, response)
+
+
+    def testMakeLoggedInRequestShouldThrowExceptionIfErrorCodeIsReturned(self):
+        gateway = betfair.Gateway()
+        gateway._sessionToken = "12345"
+
+        class MockRequest(object):
+            pass
+
+        class MockResponseHeader(object):
+            pass
+
+        class MockResponse(object):
+            def __init__(self):
+                self.header = MockResponseHeader()
+
+        okErrorCode = object()
+        class MockFunction(object):
+            def __init__(self, response):
+                self.called = False
+                self.response = response
+
+            def __call__(self, request):
+                self.called = True
+                self.request = request
+                self.response.errorCode = BetfairSOAPAPI.GetAllMarketsErrorEnum.API_ERROR
+                self.response.header.errorCode = BetfairSOAPAPI.APIErrorEnum.NO_SESSION
+                return self.response
+
+        request = MockRequest()
+        response = MockResponse()
+        function = MockFunction(response)
+        try:
+            result = gateway._makeLoggedInRequest(request, function, okErrorCode)
+            self.fail("No exception")
+        except betfair.APIException, e:
+            self.assertTrue(function.called, True)
+            self.assertEquals(function.request, request)
+            self.assertEquals(function.request.header.sessionToken, gateway._sessionToken)
+            self.assertEquals(e.errorCode, BetfairSOAPAPI.GetAllMarketsErrorEnum.API_ERROR)
+            self.assertEquals(e.headerErrorCode, BetfairSOAPAPI.APIErrorEnum.NO_SESSION)
+
+
+
     @MockOut(GetAllMarketsResult=MockGetAllMarketsResult, BetfairSOAPAPI=mockBetfairSOAPAPI)
     def testGetAllMarketsShouldPassSessionTokenAndReturnConvertedMarkets(self):
         gateway = betfair.Gateway()
