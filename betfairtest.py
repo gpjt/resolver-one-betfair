@@ -45,15 +45,6 @@ class MockBetfairSOAPAPI(object):
     LoginReq = BetfairSOAPAPI.LoginReq
     LoginErrorEnum = BetfairSOAPAPI.LoginErrorEnum
 
-    GetAllMarketsReq = BetfairSOAPAPI.GetAllMarketsReq
-    GetAllMarketsErrorEnum = BetfairSOAPAPI.GetAllMarketsErrorEnum
-
-    GetMarketReq = BetfairSOAPAPI.GetMarketReq
-    GetMarketErrorEnum = BetfairSOAPAPI.GetMarketErrorEnum
-
-    GetAccountFundsReq = BetfairSOAPAPI.GetAccountFundsReq
-    GetAccountFundsErrorEnum = BetfairSOAPAPI.GetAccountFundsErrorEnum
-
 mockBetfairSOAPAPI = MockBetfairSOAPAPI()
 
 
