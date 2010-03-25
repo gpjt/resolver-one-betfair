@@ -309,6 +309,27 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEquals(actualMarketObject, expectedMarketObject)
 
 
+    def testGetMarketNameShouldGetMarketAndReturnItsName(self):
+        gateway = betfair.Gateway()
+
+        class MockMarket(object):
+            def __init__(self, name):
+                self.name = name
+
+        expectedMarketName = object()
+        gateway.getMarket = MockFunction(MockMarket(expectedMarketName))
+
+        expectedMarketID = 5653
+
+        actualMarketName = gateway.getMarketName(expectedMarketID)
+
+        self.assertTrue(gateway.getMarket.called)
+
+        (actualMarketID, ) = gateway.getMarket.args
+        self.assertEqual(actualMarketID, expectedMarketID)
+        self.assertEquals(actualMarketName, expectedMarketName)
+
+
 
 if __name__ == '__main__':
     unittest.main()

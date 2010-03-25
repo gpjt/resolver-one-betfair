@@ -74,6 +74,19 @@ class Gateway(object):
         self.exchangeService = BetfairSOAPAPI.BFExchangeService()
 
 
+    ############################################################################################
+    # Internal utility function, not intended for general use.
+
+    def _makeLoggedInRequest(self, request, function, okCode):
+        request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
+        response = function(request)
+        if response.errorCode != okCode:
+            raise APIException(response.errorCode, response.header.errorCode)
+        return response
+
+    ############################################################################################
+    # Betfair API Functions
+
     def login(self, username, password):
         loginReq = BetfairSOAPAPI.LoginReq(username=username, password=password, productId=82)
         response = self.globalService.login(loginReq)
@@ -83,16 +96,12 @@ class Gateway(object):
         self._sessionToken = response.header.sessionToken
 
 
-    def _makeLoggedInRequest(self, request, function, okCode):
-        request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
-        response = function(request)
-        if response.errorCode != okCode:
-            raise APIException(response.errorCode, response.header.errorCode)
-        return response
-
-
     def getAllMarkets(self):
-        response = self._makeLoggedInRequest(BetfairSOAPAPI.GetAllMarketsReq(), self.exchangeService.getAllMarkets, BetfairSOAPAPI.GetAllMarketsErrorEnum.OK)
+        response = self._makeLoggedInRequest(
+            BetfairSOAPAPI.GetAllMarketsReq(),
+            self.exchangeService.getAllMarkets,
+            BetfairSOAPAPI.GetAllMarketsErrorEnum.OK
+        )
         result = []
         for data in SplitOnDelimiter(':', response.marketData):
             if data != "":
@@ -101,10 +110,25 @@ class Gateway(object):
 
 
     def getMarket(self, id):
-        response = self._makeLoggedInRequest(BetfairSOAPAPI.GetMarketReq(marketId=id), self.exchangeService.getMarket, BetfairSOAPAPI.GetMarketErrorEnum.OK)
+        response = self._makeLoggedInRequest(
+            BetfairSOAPAPI.GetMarketReq(marketId=id),
+            self.exchangeService.getMarket,
+            BetfairSOAPAPI.GetMarketErrorEnum.OK
+        )
         return response.market
 
 
     def getAccountFunds(self):
-        response = self._makeLoggedInRequest(BetfairSOAPAPI.GetAccountFundsReq(), self.exchangeService.getAccountFunds, BetfairSOAPAPI.GetAccountFundsErrorEnum.OK)
+        response = self._makeLoggedInRequest(
+            BetfairSOAPAPI.GetAccountFundsReq(),
+            self.exchangeService.getAccountFunds,
+            BetfairSOAPAPI.GetAccountFundsErrorEnum.OK
+        )
         return response
+
+
+    ############################################################################################
+    # Convenience Functions
+
+    def getMarketName(self, marketID):
+        return self.getMarket(marketID).name
